@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>新增報價單細節</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f5f7;
+        }
+        .form-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 16px;
+            color: #555;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px; /* 字體放大，避免手機自動縮放 */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box; /* 確保 padding 不會撐破寬度 */
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background-color: #00B900; /* LINE 的綠色 */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:active {
+            background-color: #009900;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>新增報價細節</h2>
+        
+        <div class="form-group">
+            <label for="itemName">品項名稱：</label>
+            <input type="text" id="itemName" placeholder="例如：六分水管" required>
+        </div>
+
+        <div class="form-group">
+            <label for="quantity">數量：</label>
+            <input type="number" id="quantity" placeholder="例如：5" required>
+        </div>
+
+        <div class="form-group">
+            <label for="price">單價：</label>
+            <input type="number" id="price" placeholder="例如：150" required>
+        </div>
+
+        <div class="form-group">
+            <label for="memo">備註 (選填)：</label>
+            <input type="text" id="memo" placeholder="例如：主臥室用">
+        </div>
+
+        <button onclick="submitForm()">確認送出</button>
+    </div>
+
+    <script>
+        // 1. 初始化 LIFF
+        // 注意：這裡的 YOUR_LIFF_ID 稍後需要替換成你從 LINE Developers 後台取得的 ID
+        const liffId = "YOUR_LIFF_ID"; 
+
+        async function initializeLiff() {
+            try {
+                await liff.init({ liffId: liffId });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                }
+            } catch (err) {
+                console.error('LIFF 初始化失敗', err);
+            }
+        }
+        
+        // 網頁載入時執行初始化
+        initializeLiff();
+
+        // 2. 處理表單送出
+        async function submitForm() {
+            const itemName = document.getElementById('itemName').value;
+            const quantity = document.getElementById('quantity').value;
+            const price = document.getElementById('price').value;
+            const memo = document.getElementById('memo').value || '無';
+
+            // 簡單的防呆：檢查必填欄位
+            if(!itemName || !quantity || !price) {
+                alert("品項、數量和單價都需要填寫喔！");
+                return;
+            }
+
+            // 組合要傳回 LINE 聊天室的訊息格式 (之後 n8n 抓這個格式會很好拆解)
+            const messageText = `[新增報價細節]\n品項：${itemName}\n數量：${quantity}\n單價：${price}\n備註：${memo}`;
+
+            try {
+                // 透過 LIFF SDK 傳送訊息
+                await liff.sendMessages([
+                    {
+                        type: 'text',
+                        text: messageText
+                    }
+                ]);
+                
+                // 傳送成功後，自動關閉 LIFF 視窗
+                liff.closeWindow();
+            } catch (error) {
+                alert("傳送失敗，請確認在 LINE APP 內開啟此連結");
+                console.error("sendMessages error", error);
+            }
+        }
+    </script>
+</body>
+</html>
