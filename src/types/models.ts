@@ -1,4 +1,4 @@
-import type { Timestamp } from 'firebase/firestore'
+import type { Timestamp } from 'firebase/firestore/lite'
 
 export const CASE_STATUSES = ['arranging', 'pending_survey', 'quoting', 'in_progress', 'unpaid', 'final_paid'] as const
 export type CaseStatus = (typeof CASE_STATUSES)[number]

@@ -14,7 +14,11 @@ service cloud.firestore {
     // schedules.bookedCount in one transaction. Public status lookup goes
     // through `getCaseStatus`. Clients never touch this collection.
     match /cases/{caseId} {
-      allow read, update, delete: if isAdmin();
+      allow read, delete: if isAdmin();
+      allow update: if isAdmin()
+        && request.resource.data.status in ['arranging', 'pending_survey', 'quoting', 'in_progress', 'unpaid', 'final_paid']
+        && request.resource.data.caseId == resource.data.caseId
+        && request.resource.data.clientInfo.phone == resource.data.clientInfo.phone;
       allow create: if false;
     }
 

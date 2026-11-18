@@ -2,7 +2,7 @@
 import { getStorage, connectStorageEmulator, type FirebaseStorage } from 'firebase/storage'
 import { getAuth, connectAuthEmulator, GoogleAuthProvider, type Auth } from 'firebase/auth'
 import { getFunctions, connectFunctionsEmulator, httpsCallable, type Functions } from 'firebase/functions'
-import { ref, uploadBytes } from 'firebase/storage'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { getApp, useEmulators } from './firebase'
 
 let storage: FirebaseStorage | undefined
@@ -40,6 +40,10 @@ export async function callFn<Req, Res>(name: string, data: Req): Promise<Res> {
 
 export async function uploadFile(path: string, file: Blob, contentType: string): Promise<void> {
   await uploadBytes(ref(getStore(), path), file, { contentType })
+}
+
+export async function fileUrl(path: string): Promise<string> {
+  return getDownloadURL(ref(getStore(), path))
 }
 
 export const googleProvider = new GoogleAuthProvider()

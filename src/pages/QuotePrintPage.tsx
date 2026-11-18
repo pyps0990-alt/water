@@ -1,9 +1,7 @@
-import { useEffect, useState } from 'react'
-import { ArrowLeft, Printer } from 'lucide-react'
 import { QuoteDocument } from '../print/QuoteDocument'
 import { DEFAULT_SETTINGS } from '../hooks/useSiteData'
 import { computeTotals } from '../lib/quote'
-import { btnAccent, btnOutlineLight } from '../components/ui'
+import { PrintShell } from '../print/PrintShell'
 import type { QuoteItem, Quotation } from '../types/models'
 
 /** Sample data for checking layout, watermark and seal alignment. Clearly marked as a sample. */
@@ -30,28 +28,10 @@ function demoQuote(rows: number): Quotation {
 
 export default function QuotePrintPage() {
   const rows = Math.min(200, Math.max(1, Number(new URLSearchParams(location.search).get('rows')) || 30))
-  const [zoom, setZoom] = useState(1)
-
-  useEffect(() => {
-    const fit = () => setZoom(Math.min(1, (window.innerWidth - 16) / 794)) // 210mm ≈ 794px
-    fit()
-    window.addEventListener('resize', fit)
-    return () => window.removeEventListener('resize', fit)
-  }, [])
-
   return (
-    <div className="min-h-screen bg-slate-200">
-      <div className="no-print sticky top-0 z-10 flex flex-wrap items-center gap-2 bg-navy p-3 text-white">
-        <a href="/" className={btnOutlineLight}><ArrowLeft aria-hidden className="h-4 w-4" />回首頁</a>
-        <button type="button" onClick={() => window.print()} className={btnAccent}>
-          <Printer aria-hidden className="h-4 w-4" />列印／存成 PDF
-        </button>
-        <span className="text-sm text-slate-300">範例報價單（{rows} 項）・列印時請選 A4、邊界「無」</span>
-      </div>
-      <div style={{ zoom }}>
-        <QuoteDocument quote={demoQuote(rows)} client={{ name: '範例客戶', phone: '09xx-xxx-678', address: '基隆市七堵區（範例地址）' }}
-          company={DEFAULT_SETTINGS.companyInfo} />
-      </div>
-    </div>
+    <PrintShell backHref="/" backLabel="回首頁" note={`範例報價單（${rows} 項）・列印時請選 A4、邊界「無」`}>
+      <QuoteDocument quote={demoQuote(rows)} client={{ name: '範例客戶', phone: '09xx-xxx-678', address: '基隆市七堵區（範例地址）' }}
+        company={DEFAULT_SETTINGS.companyInfo} />
+    </PrintShell>
   )
 }

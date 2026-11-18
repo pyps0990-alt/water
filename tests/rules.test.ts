@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest'
 import { initializeTestEnvironment, assertFails, assertSucceeds, type RulesTestEnvironment } from '@firebase/rules-unit-testing'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'
 import { ref, uploadBytes } from 'firebase/storage'
 
 let env: RulesTestEnvironment
@@ -25,8 +25,17 @@ describe('firestore', () => {
     await assertFails(getDoc(doc(anon().firestore(), 'cases/WE-1')))
     await assertFails(getDoc(doc(stranger().firestore(), 'cases/WE-1')))
   })
-  it('cases: admin can read/update', async () => {
-    await assertSucceeds(getDoc(doc(admin().firestore(), 'cases/WE-1')))
+  it('cases: admin can read/update with valid status only', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'cases/WE-1'), { caseId: 'WE-1', status: 'arranging', clientInfo: { phone: '0912345678' } })
+    })
+    const db = admin().firestore()
+    await assertSucceeds(getDoc(doc(db, 'cases/WE-1')))
+    await assertSucceeds(updateDoc(doc(db, 'cases/WE-1'), { status: 'pending_survey' }))
+    await assertFails(updateDoc(doc(db, 'cases/WE-1'), { status: 'done' }))
+    await assertFails(updateDoc(doc(db, 'cases/WE-1'), { caseId: 'WE-2' }))
+    await assertFails(updateDoc(doc(db, 'cases/WE-1'), { 'clientInfo.phone': '0900000000' }))
+    await assertFails(updateDoc(doc(stranger().firestore(), 'cases/WE-1'), { status: 'quoting' }))
   })
   it('unverified admin email is rejected', async () => {
     const ctx = env.authenticatedContext('u', { email: 'admin1@gmail.com', email_verified: false })
