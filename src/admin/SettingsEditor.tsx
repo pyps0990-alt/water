@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { btnPrimary, inputCls } from '../components/ui'
 import { DEFAULT_SETTINGS } from '../hooks/useSiteData'
 import { compressPhoto } from '../lib/submitCase'
-import { fileUrl, uploadFile } from '../lib/firebaseExtras'
+import { fileToDataUrl, isDemo } from './demo'
 import type { SystemSettings } from '../types/models'
 import { getSettings, saveSettings } from './api'
 import { Card, PageTitle } from './shared'
@@ -47,8 +47,13 @@ export function SettingsEditor() {
     setMsg('上傳浮水印中…')
     try {
       const c = await compressPhoto(f)
-      await uploadFile('branding/watermark.webp', c, 'image/webp')
-      const watermarkUrl = await fileUrl('branding/watermark.webp')
+      let watermarkUrl: string
+      if (isDemo()) watermarkUrl = await fileToDataUrl(c)
+      else {
+        const { uploadFile, fileUrl } = await import('../lib/firebaseExtras')
+        await uploadFile('branding/watermark.webp', c, 'image/webp')
+        watermarkUrl = await fileUrl('branding/watermark.webp')
+      }
       await saveSettings({ watermarkUrl })
       setS({ ...s!, watermarkUrl })
       setMsg('浮水印已更新')

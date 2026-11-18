@@ -2,7 +2,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { onAuthStateChanged, signInWithPopup, signInWithCredential, signOut, GoogleAuthProvider, type User } from 'firebase/auth'
-import { CalendarDays, ClipboardList, LogOut, Settings, Wrench } from 'lucide-react'
+import { CalendarDays, ClipboardList, FlaskConical, LogOut, Settings, Wrench } from 'lucide-react'
 import { getAuthInstance, googleProvider } from '../lib/firebaseExtras'
 import { isFirebaseConfigured, useEmulators } from '../lib/firebase'
 import { btnAccent, btnOutlineLight } from '../components/ui'
@@ -13,6 +13,7 @@ import { CaseDetail } from './CaseDetail'
 import { ScheduleManager } from './ScheduleManager'
 import { SettingsEditor } from './SettingsEditor'
 import { AdminPrint } from './AdminPrint'
+import { enterDemo, exitDemo, isDemo } from './demo'
 
 type Gate = 'loading' | 'signed-out' | 'denied' | 'ok'
 
@@ -20,20 +21,22 @@ export default function AdminApp() {
   const [user, setUser] = useState<User | null>(null)
   const [gate, setGate] = useState<Gate>('loading')
   const [error, setError] = useState('')
+  const [demo, setDemo] = useState(isDemo)
 
   useEffect(() => {
-    if (!isFirebaseConfigured) return
+    if (demo) { setGate('ok'); return }
+    if (!isFirebaseConfigured) { setGate('signed-out'); return }
     return onAuthStateChanged(getAuthInstance(), async (u) => {
       setUser(u)
       if (!u) return setGate('signed-out')
       // Authorization is enforced by security rules; probe with a 1-doc read.
       try { await listCases(1); setGate('ok') } catch { setGate('denied') }
     })
-  }, [])
+  }, [demo])
 
-  if (!isFirebaseConfigured) {
-    return <Centered><p>Firebase 尚未設定，管理後台無法使用。</p></Centered>
-  }
+  const startDemo = () => { enterDemo(); setDemo(true) }
+  const leaveDemo = () => { exitDemo(); setDemo(false); setGate(isFirebaseConfigured ? 'loading' : 'signed-out') }
+
   if (gate === 'loading') return <Centered><p role="status">載入中…</p></Centered>
   if (gate !== 'ok') {
     const login = async () => {
@@ -58,14 +61,22 @@ export default function AdminApp() {
                   <p role="alert" className="font-bold text-closed-dk">{user?.email} 沒有管理權限。</p>
                   <button className={btnOutlineLight} onClick={() => signOut(getAuthInstance())}>改用其他帳號</button>
                 </>
-              ) : (
+              ) : isFirebaseConfigured ? (
                 <>
                   <p className="text-slate-300">請使用已授權的 Google 帳號登入。</p>
                   <button className={btnAccent} onClick={login}>使用 Google 登入</button>
                   {useEmulators && <button className={btnOutlineLight} onClick={emulatorLogin}>模擬器測試登入</button>}
                   {error && <p role="alert" className="text-closed-dk">{error}</p>}
                 </>
+              ) : (
+                <p className="text-slate-300">線上資料庫尚未連接，目前無法登入。</p>
               )}
+              <div className="mt-2 border-t border-white/10 pt-4">
+                <button className={`${isFirebaseConfigured ? btnOutlineLight : btnAccent} w-full`} onClick={startDemo}>
+                  <FlaskConical aria-hidden className="h-4 w-4" />進入示範模式
+                </button>
+                <p className="mt-2 text-sm text-slate-400">使用虛構的範例案件操作所有功能，資料只存在這個分頁，關閉即清除。</p>
+              </div>
             </div>
           </div>
         </div>
@@ -76,12 +87,12 @@ export default function AdminApp() {
   return (
     <Routes>
       <Route path="print/:id" element={<AdminPrint />} />
-      <Route path="*" element={<Layout user={user} />} />
+      <Route path="*" element={<Layout user={user} demo={demo} onLeaveDemo={leaveDemo} />} />
     </Routes>
   )
 }
 
-function Layout({ user }: { user: User | null }) {
+function Layout({ user, demo, onLeaveDemo }: { user: User | null; demo: boolean; onLeaveDemo: () => void }) {
   const tab = ({ isActive }: { isActive: boolean }) =>
     `relative flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 px-3 text-sm font-bold transition-colors md:flex-row md:gap-2 md:flex-none after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:origin-left after:bg-[image:var(--grad-copper)] after:transition-transform after:duration-300 ${isActive ? 'text-busy-dk after:scale-x-100' : 'text-slate-200 after:scale-x-0 hover:text-white'}`
   return (
@@ -95,12 +106,17 @@ function Layout({ user }: { user: User | null }) {
           <NavLink viewTransition to="/admin/schedule" className={tab}><CalendarDays aria-hidden className="h-5 w-5" />檔期</NavLink>
           <NavLink viewTransition to="/admin/settings" className={tab}><Settings aria-hidden className="h-5 w-5" />設定</NavLink>
         </nav>
-        <span className="ml-auto hidden font-mono text-xs text-slate-400 lg:inline">{user?.email}</span>
-        <button onClick={() => signOut(getAuthInstance())} className="inline-flex min-h-11 items-center gap-1.5 px-2 text-sm font-bold text-slate-200 transition-colors hover:text-white max-lg:ml-auto">
-          <LogOut aria-hidden className="h-4 w-4" />登出
+        <span className="ml-auto hidden font-mono text-xs text-slate-400 lg:inline">{demo ? '示範帳號' : user?.email}</span>
+        <button onClick={() => (demo ? onLeaveDemo() : signOut(getAuthInstance()))} className="inline-flex min-h-11 items-center gap-1.5 px-2 text-sm font-bold text-slate-200 transition-colors hover:text-white max-lg:ml-auto">
+          <LogOut aria-hidden className="h-4 w-4" />{demo ? '離開示範' : '登出'}
         </button>
        </div>
        <div aria-hidden className="copper-rule opacity-80" />
+       {demo && (
+         <p role="status" className="hazard-soft flex items-center gap-2 px-4 py-1.5 text-sm font-bold text-navy">
+           <FlaskConical aria-hidden className="h-4 w-4" />示範模式・範例資料只存在這個分頁，關閉即清除
+         </p>
+       )}
       </header>
       <main className="mx-auto max-w-6xl px-3 py-5 md:px-6">
         <Routes>

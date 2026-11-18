@@ -134,6 +134,7 @@ body {
   .sheet::before { top: -6px; left: -6px; border-width: 2px 0 0 2px; }
   .sheet::after { bottom: -6px; right: -6px; border-width: 0 2px 2px 0; }
 
+  .hazard-soft { background: repeating-linear-gradient(-45deg, #FDE68A 0 14px, #FCD34D 14px 28px); }
   /* Hazard tape */
   .hazard {
     background-image: repeating-linear-gradient(-45deg, var(--color-copper) 0 10px, var(--color-navy) 10px 20px);

@@ -4,7 +4,6 @@ import { ArrowLeft, ChevronRight, MapPin, MessageCircle, Phone, X, ZoomIn } from
 import { BUILDING_LABELS, CASE_STATUSES, CATEGORY_LABELS, STATUS_LABELS, type CaseStatus } from '../types/models'
 import { btnPrimary, btnSecondary, inputCls } from '../components/ui'
 import { StatusStepper } from '../components/StatusStepper'
-import { fileUrl } from '../lib/firebaseExtras'
 import { getCase, saveSurveyNotes, setStatus, type CaseRow } from './api'
 import { Card, PageTitle, SOURCE_LABELS, StatusBadge, fmtTime } from './shared'
 import { QuoteEditor } from './QuoteEditor'
@@ -110,7 +109,10 @@ function Photos({ paths }: { paths: string[] }) {
   const [open, setOpen] = useState<number | null>(null)
   const [zoom, setZoom] = useState(false)
   const dlg = useRef<HTMLDialogElement>(null)
-  useEffect(() => { Promise.all(paths.map((p) => fileUrl(p).catch(() => ''))).then(setUrls) }, [paths])
+  useEffect(() => {
+    if (paths.every((p) => p.startsWith('data:'))) { setUrls(paths); return } // demo mode
+    import('../lib/firebaseExtras').then(({ fileUrl }) => Promise.all(paths.map((p) => fileUrl(p).catch(() => '')))).then(setUrls)
+  }, [paths])
   useEffect(() => { if (open !== null) { setZoom(false); dlg.current?.showModal() } }, [open])
 
   if (!paths.length) return <p className="mt-3 text-ink-muted">客戶未上傳照片。</p>
