@@ -1,0 +1,7 @@
+{
+  "maxWeeklyCases": 5,
+  "companyInfo": { "name": "工作室正式名稱", "taxId": "12345678", "phone": "09XX-XXX-XXX", "address": "基隆／台北服務據點", "bankAccount": "銀行代碼 + 帳號", "lineOfficialUrl": "https://lin.ee/xxxxxxx" },
+  "watermarkUrl": "",
+  "unacceptedServices": ["高壓工業變電站", "公共場所消防安全簽證"],
+  "licenses": [{ "name": "乙級室內配線技術士", "certId": "XXX-XXXXXX" }]
+}

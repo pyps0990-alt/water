@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // TODO: replace with the real technician / owner Google accounts.
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in ['admin1@gmail.com', 'admin2@gmail.com'];
+    }
+
+    // Cases are created only by the `createCase` Cloud Function (Admin SDK),
+    // which assigns the case ID, enforces maxWeeklyCases and bumps
+    // schedules.bookedCount in one transaction. Public status lookup goes
+    // through `getCaseStatus`. Clients never touch this collection.
+    match /cases/{caseId} {
+      allow read, update, delete: if isAdmin();
+      allow create: if false;
+    }
+
+    match /schedules/{dateId} {
+      allow read: if true;
+      allow write: if isAdmin()
+        && request.resource.data.dayStatus in ['available', 'busy', 'closed'];
+    }
+
+    match /portfolio/{itemId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Holds `global` (public config) and `reviews` (cached Google reviews).
+    match /system_settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Internal counters (case ID sequence etc.) — functions only.
+    match /counters/{docId} {
+      allow read, write: if false;
+    }
+  }
+}

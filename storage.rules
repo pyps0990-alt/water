@@ -1,0 +1,33 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in ['admin1@gmail.com', 'admin2@gmail.com'];
+    }
+    function isImageUnder5MB() {
+      return request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/(webp|jpeg|png)');
+    }
+
+    // Client site photos, uploaded before the case is submitted.
+    // Write-once (no overwrite), images only, < 5MB; only admins can read/list.
+    match /case-uploads/{uploadId}/{fileName} {
+      allow create: if isImageUnder5MB()
+        && uploadId.matches('^[A-Za-z0-9_-]{16,40}$');
+      allow read, delete: if isAdmin();
+    }
+
+    // Portfolio before/after images and watermark: public read, admin write.
+    match /portfolio/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() && isImageUnder5MB();
+    }
+    match /branding/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() && isImageUnder5MB();
+    }
+  }
+}
