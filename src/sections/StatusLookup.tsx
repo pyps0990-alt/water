@@ -33,11 +33,11 @@ export function StatusLookup() {
   }
 
   return (
-    <Section id="status" title="案件進度查詢" lead="輸入案件編號與電話末三碼，即可查看目前進度。">
-      <form onSubmit={onSubmit} noValidate className="grid gap-4 rounded-xl bg-surface p-5 shadow-sm sm:grid-cols-[2fr_1fr_auto] sm:items-end">
+    <Section id="status" no={6} code="ST" title="案件進度查詢" lead="輸入案件編號與電話末三碼，即可查看目前進度。">
+      <form onSubmit={onSubmit} noValidate className="sheet grid gap-4 p-5 sm:grid-cols-[2fr_1fr_auto] sm:items-end">
         <div>
           <label htmlFor="q-case" className="font-semibold">案件編號</label>
-          <input id="q-case" className={`${inputCls} uppercase`} placeholder="WE-20261118-01" autoCapitalize="characters" value={caseId} onChange={(e) => setCaseId(e.target.value)} />
+          <input id="q-case" className={`${inputCls} font-mono uppercase`} placeholder="WE-20261118-01" autoCapitalize="characters" value={caseId} onChange={(e) => setCaseId(e.target.value)} />
         </div>
         <div>
           <label htmlFor="q-last3" className="font-semibold">電話末三碼</label>
@@ -48,9 +48,9 @@ export function StatusLookup() {
       <div aria-live="polite" className="mt-4">
         {error && <p role="alert" className="font-semibold text-closed">{error}</p>}
         {result && (
-          <div className="rounded-xl bg-surface p-5 shadow-sm">
-            <p><strong>{result.caseId}</strong>・{CATEGORY_LABELS[result.category]}</p>
-            <p className="mb-3 text-lg">目前狀態：<strong className="text-eng-blue">{STATUS_LABELS[result.status]}</strong></p>
+          <div className="sheet mt-2 p-5">
+            <p><strong className="font-mono">{result.caseId}</strong>・{CATEGORY_LABELS[result.category]}</p>
+            <p className="mb-5 text-lg">目前狀態：<strong className="text-eng-blue">{STATUS_LABELS[result.status]}</strong></p>
             <StatusStepper status={result.status} />
             {result.updatedAt && <p className="mt-3 text-sm text-ink-muted">最後更新：{new Date(result.updatedAt).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })}</p>}
           </div>

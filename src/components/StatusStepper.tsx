@@ -6,25 +6,38 @@ const ICONS: Record<CaseStatus, typeof CheckCircle2> = {
   in_progress: HardHat, unpaid: Banknote, final_paid: CheckCircle2,
 }
 
-/** Six-stage progress; state is shown by text + icon + color, never color alone. */
+/** Six terminals on a wire. State = text + icon + color (never color alone). */
 export function StatusStepper({ status }: { status: CaseStatus }) {
   const current = CASE_STATUSES.indexOf(status)
+  const pct = (current / (CASE_STATUSES.length - 1)) * 100
   return (
-    <ol className="grid gap-2 sm:grid-cols-6" aria-label="案件進度">
-      {CASE_STATUSES.map((s, i) => {
-        const Icon = ICONS[s]
-        const state = i < current ? 'done' : i === current ? 'current' : 'todo'
-        const cls = state === 'done' ? 'border-ok bg-green-50 text-ok' : state === 'current' ? 'border-eng-blue bg-eng-blue text-white' : 'border-slate-300 bg-surface text-ink-muted'
-        const tag = state === 'done' ? '已完成' : state === 'current' ? '目前階段' : '尚未開始'
-        return (
-          <li key={s} aria-current={state === 'current' ? 'step' : undefined}
-            className={`flex items-center gap-2 rounded-lg border-2 p-2 sm:flex-col sm:text-center ${cls}`}>
-            <Icon aria-hidden className="h-5 w-5 shrink-0" />
-            <span className="font-semibold">{i + 1}. {STATUS_LABELS[s]}</span>
-            <span className="ml-auto text-xs sm:ml-0">{tag}</span>
-          </li>
-        )
-      })}
-    </ol>
+    <div className="relative">
+      {/* wire: grey track with the energized (copper) part up to the current terminal */}
+      <span aria-hidden className="absolute bottom-5 left-[20px] top-5 w-1 bg-slate-300 sm:hidden">
+        <span className="block w-full bg-copper" style={{ height: `${pct}%` }} />
+      </span>
+      <span aria-hidden className="absolute left-[8.33%] right-[8.33%] top-[20px] hidden h-1 bg-slate-300 sm:block">
+        <span className="block h-full bg-copper" style={{ width: `${pct}%` }} />
+      </span>
+      <ol className="relative grid gap-3 sm:grid-cols-6 sm:gap-1" aria-label="案件進度">
+        {CASE_STATUSES.map((s, i) => {
+          const Icon = ICONS[s]
+          const state = i < current ? 'done' : i === current ? 'current' : 'todo'
+          const node = state === 'done' ? 'border-ok bg-ok text-white' : state === 'current' ? 'pulse-ring border-copper bg-navy text-busy-dk' : 'border-slate-300 bg-surface text-slate-500'
+          const tag = state === 'done' ? '已完成' : state === 'current' ? '目前階段' : '尚未開始'
+          return (
+            <li key={s} aria-current={state === 'current' ? 'step' : undefined} className="flex items-center gap-3 sm:flex-col sm:gap-1 sm:text-center">
+              <span className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-[3px] ${node}`}>
+                <Icon aria-hidden className="h-5 w-5" />
+              </span>
+              <span>
+                <span className={`block font-bold ${state === 'todo' ? 'text-ink-muted' : 'text-ink'}`}>{STATUS_LABELS[s]}</span>
+                <span className={`block font-mono text-xs ${state === 'current' ? 'font-bold text-busy' : 'text-ink-muted'}`}>{String(i + 1).padStart(2, '0')} · {tag}</span>
+              </span>
+            </li>
+          )
+        })}
+      </ol>
+    </div>
   )
 }

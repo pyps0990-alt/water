@@ -86,8 +86,8 @@ export function SurveyForm({ source, weekFull }: { source: Source; weekFull: boo
 
   if (message?.kind === 'ok') {
     return (
-      <Section id="book" title="預約場勘">
-        <div role="status" aria-live="polite" className="rounded-xl border-l-4 border-ok bg-green-50 p-6">
+      <Section id="book" no={5} code="SR" title="預約場勘">
+        <div role="status" aria-live="polite" className="sheet border-l-8 border-l-ok p-6">
           <p className="flex items-center gap-2 text-lg font-bold text-ok"><CheckCircle2 aria-hidden className="h-6 w-6" />{message.text}</p>
           <p className="mt-3">您的案件編號：<strong className="text-2xl tracking-wide text-navy">{message.caseId}</strong></p>
           <p className="mt-1 text-ink-muted">請保留案件編號，可搭配電話末三碼在下方查詢進度。</p>
@@ -99,11 +99,11 @@ export function SurveyForm({ source, weekFull }: { source: Source; weekFull: boo
 
   const L = (k: string) => `${uid}-${k}`
   return (
-    <Section id="book" title="預約場勘" lead="填寫問題與現場照片，我們看過後會聯繫您安排到府場勘。場勘後才報價。">
+    <Section id="book" no={5} code="SR" title="預約場勘" lead="填寫問題與現場照片，我們看過後會聯繫您安排到府場勘。場勘後才報價。">
       {weekFull && (
         <p className="mb-4 rounded-lg bg-amber-50 p-3 font-semibold text-busy">本週名額已滿，現在送出將安排於下週場勘。</p>
       )}
-      <form noValidate onSubmit={onSubmit} className="grid gap-5 rounded-xl bg-surface p-5 shadow-sm md:grid-cols-2">
+      <form noValidate onSubmit={onSubmit} className="sheet grid gap-5 p-5 md:grid-cols-2 md:p-7">
         <div>
           <label htmlFor={L('name')} className="font-semibold">姓名／稱呼 <span className="text-closed">*</span></label>
           <input id={L('name')} className={inputCls} autoComplete="name" value={f.name} onChange={set('name')} {...fieldHint(L('name'), errors.name)} />
@@ -134,7 +134,7 @@ export function SurveyForm({ source, weekFull }: { source: Source; weekFull: boo
           <legend className="font-semibold">建物類型</legend>
           <div className="mt-2 grid grid-cols-2 gap-2 md:grid-cols-4">
             {BUILDING_TYPES.map((b) => (
-              <label key={b} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-slate-400 px-3 has-[:checked]:border-eng-blue has-[:checked]:bg-blue-50">
+              <label key={b} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-sm border-[1.5px] border-slate-500 px-3 has-[:checked]:border-navy has-[:checked]:bg-navy has-[:checked]:text-white">
                 <input type="radio" name="buildingType" value={b} checked={f.buildingType === b} onChange={set('buildingType')} className="h-5 w-5 accent-eng-blue" />
                 {BUILDING_LABELS[b]}
               </label>
@@ -164,7 +164,7 @@ export function SurveyForm({ source, weekFull }: { source: Source; weekFull: boo
           <ul className="mt-2 flex flex-wrap gap-2" aria-label="已選照片">
             {photos.map((p, i) => (
               <li key={p.url} className="relative">
-                <img src={p.url} alt={`現場照片 ${i + 1}`} className="h-24 w-24 rounded-lg object-cover" />
+                <img src={p.url} alt={`現場照片 ${i + 1}`} className="h-24 w-24 rounded-sm border-[1.5px] border-navy object-cover" />
                 <button type="button" onClick={() => removePhoto(i)} aria-label={`移除照片 ${i + 1}`}
                   className="absolute -right-2 -top-2 inline-flex h-11 w-11 items-center justify-center">
                   <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-navy text-white"><X aria-hidden className="h-4 w-4" /></span>
@@ -173,7 +173,7 @@ export function SurveyForm({ source, weekFull }: { source: Source; weekFull: boo
             ))}
             {photos.length < MAX_PHOTOS && (
               <li>
-                <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-eng-blue text-sm font-semibold text-eng-blue focus-within:ring-2 focus-within:ring-eng-blue">
+                <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center rounded-sm border-2 border-dashed border-eng-blue text-sm font-semibold text-eng-blue focus-within:ring-2 focus-within:ring-eng-blue">
                   <Camera aria-hidden className="h-6 w-6" />新增照片
                   <input type="file" accept="image/*" multiple className="sr-only" onChange={(e) => { addPhotos(e.target.files); e.target.value = '' }} />
                 </label>

@@ -10,17 +10,17 @@ const NAV = [
 
 export function Header({ name }: { name: string }) {
   return (
-    <header className="sticky top-0 z-30 bg-navy text-white shadow">
+    <header className="sticky top-0 z-30 border-b-2 border-copper bg-navy text-white">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-2">
         <a href="#top" className="flex min-h-11 items-center gap-2 font-bold">
-          <Wrench aria-hidden className="h-6 w-6 text-amber-accent" />
-          <span>{name}</span>
+          <span aria-hidden className="inline-flex h-8 w-8 items-center justify-center border-2 border-copper"><Wrench className="h-4 w-4 text-copper" /></span>
+          <span className="font-black tracking-wide">{name}</span>
         </a>
         <nav aria-label="主要導覽" className="hidden md:block">
           <ul className="flex gap-1">
             {NAV.map((n) => (
               <li key={n.href}>
-                <a href={n.href} className="inline-flex min-h-11 items-center rounded px-3 hover:bg-white/10">{n.label}</a>
+                <a href={n.href} className="inline-flex min-h-11 items-center px-3 hover:text-busy-dk">{n.label}</a>
               </li>
             ))}
           </ul>
@@ -39,12 +39,12 @@ export function MobileActionBar() {
     { href: '#schedule', label: '檔期', Icon: CalendarDays },
   ]
   return (
-    <nav aria-label="快速操作" className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-300 bg-surface md:hidden">
+    <nav aria-label="快速操作" className="fixed inset-x-0 bottom-0 z-30 border-t-2 border-copper bg-navy md:hidden">
       <ul className="grid grid-cols-3">
         {items.map(({ href, label, Icon }) => (
           <li key={href}>
-            <a href={href} className="flex min-h-14 flex-col items-center justify-center gap-0.5 text-sm font-semibold text-eng-blue">
-              <Icon aria-hidden className="h-5 w-5" />
+            <a href={href} className="flex min-h-14 flex-col items-center justify-center gap-0.5 text-sm font-bold text-white active:bg-white/10">
+              <Icon aria-hidden className="h-5 w-5 text-copper" />
               {label}
             </a>
           </li>

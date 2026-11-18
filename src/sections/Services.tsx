@@ -4,6 +4,7 @@ import { CATEGORIES, CATEGORY_LABELS, type Category } from '../types/models'
 import { Section } from '../components/ui'
 
 const ICONS = { electrical: Zap, plumbing: Droplets, fixtures: Bath, weak_current: Cable } as const
+const CODES: Record<Category, string> = { electrical: 'E-01', plumbing: 'P-02', fixtures: 'F-03', weak_current: 'W-04' }
 
 const SERVICES: Record<Category, string[]> = {
   electrical: ['老屋全室重新配線', '總開關箱／無熔絲開關更換', '冷氣、烘碗機、IH 爐專用迴路', '110V／220V 迴路配置與平衡', '跳電、漏電、插座燒焦檢修', '台電表後增設電源'],
@@ -26,7 +27,7 @@ export function Services() {
   }
 
   return (
-    <Section id="services" title="服務項目" lead="水電常常一起出問題，一個窗口處理到底。">
+    <Section id="services" no={2} code="SV" title="服務項目" lead="水電常常一起出問題，一個窗口處理到底。">
       <div role="tablist" aria-label="工程類別" className="grid grid-cols-2 gap-2 md:grid-cols-4">
         {CATEGORIES.map((c, i) => {
           const Icon = ICONS[c]
@@ -42,11 +43,13 @@ export function Services() {
               tabIndex={selected ? 0 : -1}
               onClick={() => setActive(c)}
               onKeyDown={(e) => onKey(e, i)}
-              className={`flex min-h-14 items-center gap-2 rounded-lg border-2 px-3 py-2 text-left font-semibold ${
-                selected ? 'border-eng-blue bg-eng-blue text-white' : 'border-slate-300 bg-surface text-ink hover:border-eng-blue'
+              className={`group flex min-h-16 flex-col items-start justify-center gap-0.5 rounded-sm border-[1.5px] px-3 py-2 text-left font-bold ${
+                selected ? 'border-navy bg-navy text-white shadow-[4px_4px_0_var(--color-copper)]' : 'border-slate-500 bg-surface text-ink hover:border-navy'
               }`}
             >
-              <Icon aria-hidden className="h-5 w-5 shrink-0" />
+              <span className={`flex items-center gap-1.5 font-mono text-xs ${selected ? 'text-busy-dk' : 'text-eng-blue'}`}>
+                <Icon aria-hidden className="h-4 w-4 shrink-0" />{CODES[c]}
+              </span>
               {CATEGORY_LABELS[c]}
             </button>
           )
@@ -54,10 +57,12 @@ export function Services() {
       </div>
       {CATEGORIES.map((c) => (
         <div key={c} role="tabpanel" id={`panel-${c}`} aria-labelledby={`tab-${c}`} hidden={c !== active} tabIndex={0}
-          className="mt-4 rounded-xl bg-surface p-5 shadow-sm">
-          <ul className="grid gap-2 sm:grid-cols-2">
-            {SERVICES[c].map((s) => (
-              <li key={s} className="flex gap-2"><span aria-hidden className="text-ok">✔</span>{s}</li>
+          className="sheet mt-6 p-5">
+          <ul className="grid gap-x-6 sm:grid-cols-2">
+            {SERVICES[c].map((s, i) => (
+              <li key={s} className="flex items-baseline gap-3 border-b border-dashed border-slate-300 py-2.5">
+                <span aria-hidden className="font-mono text-xs font-bold text-eng-blue">{CODES[c].slice(0, 1)}{String(i + 1).padStart(2, '0')}</span>{s}
+              </li>
             ))}
           </ul>
         </div>
@@ -70,14 +75,19 @@ export function Unaccepted({ items }: { items: string[] }) {
   if (!items.length) return null
   return (
     <div className="mx-auto max-w-5xl px-4">
-      <aside aria-labelledby="unaccepted-title" className="rounded-xl border-l-4 border-closed bg-red-50 p-5">
-        <h2 id="unaccepted-title" className="flex items-center gap-2 text-lg font-bold text-closed">
-          <Ban aria-hidden className="h-5 w-5" /> 未承接項目
-        </h2>
-        <p className="mt-1 text-ink-muted">以下工程不在我們的服務範圍，請另洽專業廠商：</p>
-        <ul className="mt-2 list-disc pl-6">
-          {items.map((s) => <li key={s}>{s}</li>)}
-        </ul>
+      <aside aria-labelledby="unaccepted-title" className="overflow-hidden border-[1.5px] border-navy bg-surface">
+        <div aria-hidden className="hazard h-3" />
+        <div className="p-5">
+          <h2 id="unaccepted-title" className="flex items-center gap-2 text-lg font-black text-closed">
+            <Ban aria-hidden className="h-5 w-5" /> 未承接項目 <span className="font-mono text-xs font-bold text-ink-muted">OUT OF SCOPE</span>
+          </h2>
+          <p className="mt-1 text-ink-muted">以下工程不在我們的服務範圍，請另洽專業廠商，避免您白跑一趟：</p>
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+            {items.map((s) => (
+              <li key={s} className="flex items-center gap-2 border-l-4 border-closed bg-red-50 px-3 py-2"><span aria-hidden className="font-mono font-bold text-closed">✕</span>{s}</li>
+            ))}
+          </ul>
+        </div>
       </aside>
     </div>
   )
@@ -91,13 +101,18 @@ export function Process() {
     ['施工與保固', '簽約施工，完工後享保固'],
   ]
   return (
-    <Section id="process" title="服務流程" lead="不做線上估價器，因為看不到牆裡的狀況。">
-      <ol className="grid gap-3 md:grid-cols-4">
+    <Section id="process" no={3} code="PR" title="服務流程" lead="不做線上估價器，因為看不到牆裡的狀況。">
+      <ol className="relative grid gap-4 md:grid-cols-4">
+        <span aria-hidden className="absolute bottom-6 left-[22px] top-6 w-1 bg-eng-blue/80 md:bottom-auto md:left-6 md:right-6 md:top-[22px] md:h-1 md:w-auto" />
         {steps.map(([t, d], i) => (
-          <li key={t} className="rounded-xl bg-surface p-4 shadow-sm">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-navy font-bold text-white">{i + 1}</span>
-            <p className="mt-2 font-bold">{t}</p>
-            <p className="text-ink-muted">{d}</p>
+          <li key={t} className="relative flex gap-4 md:flex-col md:gap-3">
+            <span className="relative z-10 inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-[3px] border-eng-blue bg-surface font-mono text-sm font-bold text-eng-blue">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <div>
+              <p className="font-black">{t}</p>
+              <p className="text-ink-muted">{d}</p>
+            </div>
           </li>
         ))}
       </ol>

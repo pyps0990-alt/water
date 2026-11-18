@@ -1,10 +1,12 @@
 @import "tailwindcss";
 
-/* Brand tokens (Manual §2.1) */
+/* Brand tokens (Manual §2.1) + blueprint extensions */
 @theme {
   --color-navy: #0F172A;
+  --color-navy-2: #16213B;
   --color-eng-blue: #1E40AF;
   --color-amber-accent: #D97706;
+  --color-copper: #F59E0B;
   --color-canvas: #F8FAFC;
   --color-surface: #FFFFFF;
   --color-ink: #0F172A;
@@ -12,13 +14,95 @@
   --color-ok: #15803D;
   --color-busy: #B45309;
   --color-closed: #B91C1C;
+  /* On-dark status colors (≥ 7:1 on navy) */
+  --color-ok-dk: #4ADE80;
+  --color-busy-dk: #FBBF24;
+  --color-closed-dk: #FCA5A5;
+  --font-sans: "Noto Sans TC", system-ui, "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
 
 html { font-size: 100%; }
 body {
-  @apply bg-canvas text-ink;
+  @apply bg-canvas font-sans text-ink;
   font-size: 1rem;
   line-height: 1.6;
-  font-family: system-ui, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  /* drafting paper: faint 8mm-ish grid */
+  background-image:
+    linear-gradient(rgb(30 64 175 / 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(30 64 175 / 0.045) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
-:focus-visible { outline: 3px solid var(--color-eng-blue); outline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--color-copper); outline-offset: 2px; }
+
+@layer components {
+  /* Blueprint: navy with minor + major grid */
+  .bp-grid {
+    background-color: var(--color-navy);
+    background-image:
+      linear-gradient(rgb(148 163 184 / 0.16) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(148 163 184 / 0.16) 1px, transparent 1px),
+      linear-gradient(rgb(148 163 184 / 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(148 163 184 / 0.07) 1px, transparent 1px);
+    background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+  }
+
+  /* Drawing sheet card with registration ticks on two corners */
+  .sheet {
+    position: relative;
+    background: var(--color-surface);
+    border: 1.5px solid rgb(15 23 42 / 0.85);
+    border-radius: 2px;
+  }
+  .sheet::before, .sheet::after {
+    content: ""; position: absolute; width: 12px; height: 12px; pointer-events: none;
+    border-color: var(--color-copper); border-style: solid;
+  }
+  .sheet::before { top: -6px; left: -6px; border-width: 2px 0 0 2px; }
+  .sheet::after { bottom: -6px; right: -6px; border-width: 0 2px 2px 0; }
+
+  /* Hazard tape */
+  .hazard {
+    background-image: repeating-linear-gradient(-45deg, var(--color-copper) 0 10px, var(--color-navy) 10px 20px);
+  }
+
+  /* Dimension line under section titles: |←————→| */
+  .dim-line { position: relative; height: 10px; }
+  .dim-line::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1.5px solid var(--color-eng-blue); }
+  .dim-line::after {
+    content: ""; position: absolute; inset: 0;
+    border-left: 1.5px solid var(--color-eng-blue); border-right: 1.5px solid var(--color-eng-blue);
+  }
+
+  /* Breaker panel */
+  .panel {
+    position: relative;
+    background: linear-gradient(180deg, #1B2742, #0F172A);
+    border: 3px solid #334155;
+    border-radius: 6px;
+    box-shadow: inset 0 0 0 2px #0B1222;
+  }
+  .screw { position: absolute; width: 12px; height: 12px; border-radius: 9999px;
+    background: radial-gradient(circle at 35% 35%, #CBD5E1, #64748B); }
+  .screw::after { content: ""; position: absolute; left: 2px; right: 2px; top: 5px; height: 2px; background: #334155; transform: rotate(35deg); }
+
+  .breaker-slot { position: relative; width: 14px; height: 26px; border-radius: 3px; background: #020617; box-shadow: inset 0 1px 2px #000; }
+  .breaker-handle { position: absolute; left: 1px; right: 1px; height: 11px; border-radius: 2px; transition: top .25s ease; }
+  .breaker-handle[data-pos="up"] { top: 1px; background: #4ADE80; }
+  .breaker-handle[data-pos="mid"] { top: 7.5px; background: #FBBF24; }
+  .breaker-handle[data-pos="down"] { top: 14px; background: #F87171; }
+}
+
+/* Single-line diagram draw-in */
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.sld-draw { stroke-dasharray: var(--len, 600); stroke-dashoffset: var(--len, 600); animation: draw 1.8s ease-out forwards; animation-delay: var(--delay, 0s); }
+@keyframes flow { to { stroke-dashoffset: -24; } }
+.sld-flow { stroke-dasharray: 6 6; animation: flow 1s linear infinite; }
+@keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgb(245 158 11 / .55); } 100% { box-shadow: 0 0 0 12px rgb(245 158 11 / 0); } }
+.pulse-ring { animation: pulse-ring 1.6s ease-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sld-draw { animation: none; stroke-dashoffset: 0; }
+  .sld-flow, .pulse-ring { animation: none; }
+  .breaker-handle { transition: none; }
+}

@@ -37,13 +37,28 @@ export default function Home() {
         <SurveyForm source={source} weekFull={schedule.thisWeekFull} />
         <StatusLookup />
       </main>
-      <footer className="bg-navy pb-24 pt-8 text-slate-200 md:pb-8">
-        <div className="mx-auto max-w-5xl space-y-1 px-4">
-          <p className="font-bold text-white">{c.name}</p>
-          {c.taxId && <p>統一編號：{c.taxId}</p>}
-          {c.phone && <p>電話：<a className="underline" href={`tel:${c.phone.replace(/[^\d+]/g, '')}`}>{c.phone}</a></p>}
-          <p>{c.address}</p>
-          {c.lineOfficialUrl && <p><a className="inline-flex min-h-11 items-center underline" href={c.lineOfficialUrl}>加入 LINE 官方帳號</a></p>}
+      <footer className="bp-grid pb-24 pt-10 text-slate-200 md:pb-10">
+        <div className="mx-auto max-w-5xl px-4">
+          <dl className="grid border-[1.5px] border-slate-400 font-mono text-sm sm:grid-cols-4">
+            <div className="border-b border-slate-500 p-3 sm:col-span-2 sm:border-r">
+              <dt className="text-xs text-slate-400">STUDIO</dt>
+              <dd className="font-sans text-lg font-black text-white">{c.name}</dd>
+            </div>
+            <div className="border-b border-slate-500 p-3 sm:border-r">
+              <dt className="text-xs text-slate-400">TAX ID 統編</dt><dd>{c.taxId || '—'}</dd>
+            </div>
+            <div className="border-b border-slate-500 p-3">
+              <dt className="text-xs text-slate-400">TEL</dt>
+              <dd>{c.phone ? <a className="underline" href={`tel:${c.phone.replace(/[^\d+]/g, '')}`}>{c.phone}</a> : '—'}</dd>
+            </div>
+            <div className="p-3 sm:col-span-2 sm:border-r sm:border-slate-500">
+              <dt className="text-xs text-slate-400">SERVICE AREA</dt><dd className="font-sans">{c.address}</dd>
+            </div>
+            <div className="p-3 sm:col-span-2">
+              <dt className="text-xs text-slate-400">LINE</dt>
+              <dd>{c.lineOfficialUrl ? <a className="inline-flex min-h-11 items-center font-sans underline" href={c.lineOfficialUrl}>加入 LINE 官方帳號</a> : '—'}</dd>
+            </div>
+          </dl>
         </div>
       </footer>
       <MobileActionBar />

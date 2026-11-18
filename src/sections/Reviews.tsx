@@ -6,15 +6,15 @@ export function Reviews({ reviews, fallbackUrl }: { reviews: ReviewsCache | null
   const url = reviews?.url ?? fallbackUrl
   const items = reviews?.items.filter((r) => r.rating >= 5).slice(0, 5) ?? []
   return (
-    <Section id="reviews" title="客戶怎麼說" lead="以下評論每週自 Google 商家檔案同步，未經修改。">
+    <Section id="reviews" no={1} code="RV" title="客戶怎麼說" lead="以下評論每週自 Google 商家檔案同步，未經修改。">
       {items.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-slate-400 bg-surface p-6 text-ink-muted">
+        <p className="sheet p-6 text-ink-muted">
           Google 評論同步設定完成後，會顯示在這裡。
         </p>
       ) : (
         <ul className="grid gap-4 md:grid-cols-2">
           {items.map((r, i) => (
-            <li key={i} className="rounded-xl bg-surface p-5 shadow-sm">
+            <li key={i} className="sheet p-5">
               <p className="flex items-center gap-1" aria-label={`${r.rating} 顆星`}>
                 {Array.from({ length: 5 }, (_, k) => (
                   <Star key={k} aria-hidden className="h-4 w-4 fill-amber-accent text-amber-accent" />
