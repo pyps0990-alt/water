@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent } from 'react'
+import { useRef, useState, type CSSProperties, type KeyboardEvent } from 'react'
 import { Ban, Bath, Cable, Droplets, Zap } from 'lucide-react'
 import { CATEGORIES, CATEGORY_LABELS, type Category } from '../types/models'
 import { Section } from '../components/ui'
@@ -43,8 +43,8 @@ export function Services() {
               tabIndex={selected ? 0 : -1}
               onClick={() => setActive(c)}
               onKeyDown={(e) => onKey(e, i)}
-              className={`group flex min-h-16 flex-col items-start justify-center gap-0.5 rounded-sm border-[1.5px] px-3 py-2 text-left font-bold ${
-                selected ? 'border-navy bg-navy text-white shadow-[4px_4px_0_var(--color-copper)]' : 'border-slate-500 bg-surface text-ink hover:border-navy'
+              className={`group flex min-h-16 flex-col items-start justify-center gap-0.5 rounded-sm border-[1.5px] px-3 py-2 text-left font-bold transition-[background-color,color,box-shadow,translate,border-color] duration-300 ease-[var(--ease-out-expo)] ${
+                selected ? '-translate-y-0.5 border-navy bg-[linear-gradient(160deg,#1E2B4A,#0F172A)] text-white shadow-[5px_5px_0_var(--color-copper)]' : 'border-slate-400 bg-surface text-ink hover:-translate-y-0.5 hover:border-navy hover:shadow-[3px_3px_0_rgb(15_23_42/0.15)]'
               }`}
             >
               <span className={`flex items-center gap-1.5 font-mono text-xs ${selected ? 'text-busy-dk' : 'text-eng-blue'}`}>
@@ -57,10 +57,10 @@ export function Services() {
       </div>
       {CATEGORIES.map((c) => (
         <div key={c} role="tabpanel" id={`panel-${c}`} aria-labelledby={`tab-${c}`} hidden={c !== active} tabIndex={0}
-          className="sheet mt-6 p-5">
-          <ul className="grid gap-x-6 sm:grid-cols-2">
+          className="sheet swap-in mt-6 p-5">
+          <ul className="stagger grid gap-x-6 sm:grid-cols-2">
             {SERVICES[c].map((s, i) => (
-              <li key={s} className="flex items-baseline gap-3 border-b border-dashed border-slate-300 py-2.5">
+              <li key={s} style={{ '--i': i } as CSSProperties} className="flex items-baseline gap-3 border-b border-dashed border-slate-300 py-2.5">
                 <span aria-hidden className="font-mono text-xs font-bold text-eng-blue">{CODES[c].slice(0, 1)}{String(i + 1).padStart(2, '0')}</span>{s}
               </li>
             ))}
@@ -103,10 +103,10 @@ export function Process() {
   return (
     <Section id="process" no={3} code="PR" title="服務流程" lead="不做線上估價器，因為看不到牆裡的狀況。">
       <ol className="relative grid gap-4 md:grid-cols-4">
-        <span aria-hidden className="absolute bottom-6 left-[22px] top-6 w-1 bg-eng-blue/80 md:bottom-auto md:left-6 md:right-6 md:top-[22px] md:h-1 md:w-auto" />
+        <span aria-hidden className="absolute bottom-6 left-[22px] top-6 w-1 bg-[linear-gradient(180deg,#38BDF8,#1E40AF)] md:bottom-auto md:left-6 md:right-6 md:top-[22px] md:h-1 md:w-auto md:bg-[linear-gradient(90deg,#38BDF8,#1E40AF)]" />
         {steps.map(([t, d], i) => (
-          <li key={t} className="relative flex gap-4 md:flex-col md:gap-3">
-            <span className="relative z-10 inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-[3px] border-eng-blue bg-surface font-mono text-sm font-bold text-eng-blue">
+          <li key={t} data-reveal="" style={{ animationDelay: `${i * 80}ms` }} className="relative flex gap-4 md:flex-col md:gap-3">
+            <span className="relative z-10 inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-[3px] border-eng-blue bg-surface font-mono text-sm font-bold text-eng-blue shadow-[0_0_0_6px_var(--color-canvas),0_8px_20px_-8px_rgb(30_64_175/0.6)]">
               {String(i + 1).padStart(2, '0')}
             </span>
             <div>

@@ -9,6 +9,9 @@ import { StatusLookup } from '../sections/StatusLookup'
 import { useSiteData } from '../hooks/useSiteData'
 import { useSchedule } from '../hooks/useSchedule'
 import { captureSource } from '../lib/source'
+import { useRevealFallback } from '../lib/motion'
+import { isFirebaseConfigured } from '../lib/firebase'
+import { weekStart } from '../lib/dates'
 import type { Source } from '../types/models'
 
 export default function Home() {
@@ -16,6 +19,11 @@ export default function Home() {
   const schedule = useSchedule(settings.maxWeeklyCases)
   const [source] = useState<Source>(() => captureSource())
   const c = settings.companyInfo
+  useRevealFallback(settings)
+
+  // Live capacity for the hero badge (null until schedule data arrives).
+  const remaining = !isFirebaseConfigured || schedule.loading ? null
+    : Math.max(0, settings.maxWeeklyCases - (schedule.weekBooked[weekStart(schedule.today)] ?? 0))
 
   // Deep links from LINE rich menu: /?source=line#book
   useEffect(() => {
@@ -28,7 +36,7 @@ export default function Home() {
       <a href="#main" className="sr-only z-50 bg-surface p-3 focus:not-sr-only focus:fixed focus:left-2 focus:top-2">跳到主要內容</a>
       <Header name={c.name} />
       <main id="main" className="pb-20 md:pb-0">
-        <Hero settings={settings} reviews={reviews} />
+        <Hero settings={settings} reviews={reviews} remaining={remaining} />
         <Reviews reviews={reviews} fallbackUrl={settings.googleReviewUrl} />
         <Services />
         <Unaccepted items={settings.unacceptedServices} />

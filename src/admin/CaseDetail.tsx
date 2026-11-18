@@ -6,7 +6,7 @@ import { btnPrimary, btnSecondary, inputCls } from '../components/ui'
 import { StatusStepper } from '../components/StatusStepper'
 import { fileUrl } from '../lib/firebaseExtras'
 import { getCase, saveSurveyNotes, setStatus, type CaseRow } from './api'
-import { Card, SOURCE_LABELS, StatusBadge, fmtTime } from './shared'
+import { Card, PageTitle, SOURCE_LABELS, StatusBadge, fmtTime } from './shared'
 import { QuoteEditor } from './QuoteEditor'
 
 export function CaseDetail() {
@@ -15,19 +15,18 @@ export function CaseDetail() {
   const reload = () => getCase(id).then(setC).catch(() => setC(null))
   useEffect(() => { reload() }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (c === undefined) return <p role="status">載入中…</p>
+  if (c === undefined) return <div className="grid gap-4"><p role="status" className="sr-only">載入中…</p><div className="skeleton h-9 w-72" /><div className="skeleton h-40 w-full" /><div className="skeleton h-40 w-full" /></div>
   if (c === null) return <p role="alert">找不到案件 {id}。<Link to="/admin" className="underline">回列表</Link></p>
 
   const ci = c.clientInfo
   const tel = ci.phone.replace(/[^\d+]/g, '')
   return (
     <div className="grid gap-4">
-      <Link to="/admin" className="inline-flex min-h-11 items-center gap-1 font-bold text-eng-blue"><ArrowLeft aria-hidden className="h-4 w-4" />案件列表</Link>
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="font-mono text-2xl font-black">{c.caseId}</h1>
+      <Link viewTransition to="/admin" className="inline-flex min-h-11 items-center gap-1 font-bold text-eng-blue"><ArrowLeft aria-hidden className="h-4 w-4" />案件列表</Link>
+      <PageTitle code="02" title={<span className="font-mono">{c.caseId}</span>}>
         <StatusBadge status={c.status} />
-        <span className="font-mono text-sm text-ink-muted">來源 {SOURCE_LABELS[c.source]}・建立 {fmtTime(c.createdAt)}</span>
-      </div>
+      </PageTitle>
+      <p className="-mt-2 font-mono text-sm text-ink-muted">來源 {SOURCE_LABELS[c.source]}・建立 {fmtTime(c.createdAt)}</p>
 
       <StatusControl c={c} onChanged={reload} />
 
@@ -79,14 +78,15 @@ function StatusControl({ c, onChanged }: { c: CaseRow; onChanged: () => void }) 
       <div className="mt-4 flex flex-wrap gap-2">
         {next && <button className={btnPrimary} onClick={() => open(next)}>推進到「{STATUS_LABELS[next]}」<ChevronRight aria-hidden className="h-4 w-4" /></button>}
         <label className="flex items-center gap-2">
-          <span className="text-sm font-bold">或改為</span>
+          <span className="whitespace-nowrap text-sm font-bold">或改為</span>
           <select className={`${inputCls} mt-0 w-auto`} value="" onChange={(e) => e.target.value && open(e.target.value as CaseStatus)}>
             <option value="">選擇狀態…</option>
             {CASE_STATUSES.filter((s) => s !== c.status).map((s) => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
           </select>
         </label>
       </div>
-      <dialog ref={dlg} aria-labelledby="st-title" className="m-auto w-[min(26rem,92vw)] border-2 border-navy p-0 backdrop:bg-navy/60">
+      <dialog ref={dlg} aria-labelledby="st-title" className="dlg m-auto w-[min(26rem,92vw)] overflow-hidden rounded-sm border-[1.5px] border-navy p-0 shadow-[0_30px_80px_-20px_rgb(15_23_42/0.6)] backdrop:bg-ink-900/70 backdrop:backdrop-blur-sm">
+        <div aria-hidden className="copper-rule" />
         <div className="p-5">
           <h2 id="st-title" className="text-lg font-black">確認變更狀態</h2>
           <p className="mt-2">{STATUS_LABELS[c.status]} → <strong>{STATUS_LABELS[target]}</strong></p>

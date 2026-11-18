@@ -5,7 +5,7 @@ import { compressPhoto } from '../lib/submitCase'
 import { fileUrl, uploadFile } from '../lib/firebaseExtras'
 import type { SystemSettings } from '../types/models'
 import { getSettings, saveSettings } from './api'
-import { Card } from './shared'
+import { Card, PageTitle } from './shared'
 
 export function SettingsEditor() {
   const [s, setS] = useState<SystemSettings | null>(null)
@@ -57,7 +57,7 @@ export function SettingsEditor() {
 
   return (
     <div className="grid gap-4">
-      <h1 className="text-2xl font-black">公司設定</h1>
+      <PageTitle code="04" title="公司設定" />
       <Card className="grid gap-3 sm:grid-cols-2">
         {field('name', '工作室名稱')}
         {field('taxId', '統一編號', true)}

@@ -14,16 +14,16 @@ export function StatusStepper({ status }: { status: CaseStatus }) {
     <div className="relative">
       {/* wire: grey track with the energized (copper) part up to the current terminal */}
       <span aria-hidden className="absolute bottom-5 left-[20px] top-5 w-1 bg-slate-300 sm:hidden">
-        <span className="block w-full bg-copper" style={{ height: `${pct}%` }} />
+        <span className="wire-fill-v block h-full w-full bg-[image:var(--grad-copper)] shadow-[0_0_10px_rgb(245_158_11/0.6)]" style={{ scale: `1 ${pct / 100}` }} />
       </span>
       <span aria-hidden className="absolute left-[8.33%] right-[8.33%] top-[20px] hidden h-1 bg-slate-300 sm:block">
-        <span className="block h-full bg-copper" style={{ width: `${pct}%` }} />
+        <span className="wire-fill block h-full w-full bg-[image:var(--grad-copper)] shadow-[0_0_10px_rgb(245_158_11/0.6)]" style={{ scale: `${pct / 100} 1` }} />
       </span>
       <ol className="relative grid gap-3 sm:grid-cols-6 sm:gap-1" aria-label="案件進度">
         {CASE_STATUSES.map((s, i) => {
           const Icon = ICONS[s]
           const state = i < current ? 'done' : i === current ? 'current' : 'todo'
-          const node = state === 'done' ? 'border-ok bg-ok text-white' : state === 'current' ? 'pulse-ring border-copper bg-navy text-busy-dk' : 'border-slate-300 bg-surface text-slate-500'
+          const node = state === 'done' ? 'border-ok bg-[linear-gradient(180deg,#22C55E,#15803D)] text-white' : state === 'current' ? 'pulse-ring border-copper bg-navy text-busy-dk shadow-[var(--glow-copper)]' : 'border-slate-300 bg-surface text-slate-500'
           const tag = state === 'done' ? '已完成' : state === 'current' ? '目前階段' : '尚未開始'
           return (
             <li key={s} aria-current={state === 'current' ? 'step' : undefined} className="flex items-center gap-3 sm:flex-col sm:gap-1 sm:text-center">

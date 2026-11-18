@@ -33,19 +33,23 @@ export function useSchedule(maxWeeklyCases: number) {
       .finally(() => setLoading(false))
   }, [today])
 
-  const days = useMemo<DayView[]>(() => {
-    const weekTotals: Record<string, number> = {}
+  const weekTotals = useMemo(() => {
+    const t: Record<string, number> = {}
     for (const d of Object.values(docs)) {
       const w = weekStart(d.date)
-      weekTotals[w] = (weekTotals[w] ?? 0) + (d.bookedCount ?? 0)
+      t[w] = (t[w] ?? 0) + (d.bookedCount ?? 0)
     }
+    return t
+  }, [docs])
+
+  const days = useMemo<DayView[]>(() => {
     return nextDays(today, SCHEDULE_DAYS).map((date) => {
       const d = docs[date]
       const weekFull = (weekTotals[weekStart(date)] ?? 0) >= maxWeeklyCases
       return { date, status: d?.dayStatus ?? 'available', note: d?.note, weekFull }
     })
-  }, [docs, today, maxWeeklyCases])
+  }, [docs, today, maxWeeklyCases, weekTotals])
 
   const thisWeekFull = days[0]?.weekFull ?? false
-  return { days, loading, thisWeekFull, today }
+  return { days, loading, thisWeekFull, today, weekBooked: weekTotals }
 }
