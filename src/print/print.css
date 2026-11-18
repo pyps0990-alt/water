@@ -1,0 +1,72 @@
+/* A4 quotation print engine (Manual §3.2). All geometry in mm, matching paginate.ts. */
+.a4-stack { display: flex; flex-direction: column; align-items: center; gap: 8mm; padding: 8mm 0; }
+
+.a4-page {
+  position: relative;
+  width: 210mm;
+  height: 297mm;
+  padding: 15mm;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: #fff;
+  color: #0F172A;
+  font-size: 10pt;
+  line-height: 1.45;
+  box-shadow: 0 2px 12px rgb(15 23 42 / 0.18);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.a4-content { position: relative; z-index: 1; display: flex; flex-direction: column; height: 100%; }
+
+/* Brand watermark: centered, repeated on every page. */
+.a4-watermark {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  display: flex; align-items: center; justify-content: center; opacity: 0.08;
+}
+.a4-watermark img { width: 120mm; height: auto; }
+.a4-watermark span { font-size: 40pt; font-weight: 800; transform: rotate(-30deg); white-space: nowrap; color: #0F172A; }
+
+/* Cross-page seal guide: a dashed circle centered on the paper edge, so each page shows a half. */
+.seal { position: absolute; top: 50%; z-index: 2; width: 28mm; height: 28mm; margin-top: -14mm;
+  border: 0.5mm dashed #B91C1C; border-radius: 50%; pointer-events: none; }
+.seal-right { right: -14mm; }
+.seal-left { left: -14mm; }
+.seal-label { position: absolute; top: 50%; z-index: 2; transform: translateY(-50%);
+  writing-mode: vertical-rl; font-size: 7pt; letter-spacing: 0.5mm; color: #B91C1C; pointer-events: none; }
+.seal-label.right { right: 1.5mm; }
+.seal-label.left { left: 1.5mm; }
+
+.q-head { height: 68mm; overflow: hidden; }
+.q-cont { height: 16mm; display: flex; justify-content: space-between; align-items: flex-end;
+  border-bottom: 0.4mm solid #0F172A; padding-bottom: 2mm; font-size: 9pt; }
+.q-brand { display: flex; justify-content: space-between; border-bottom: 0.8mm solid #0F172A; padding-bottom: 3mm; }
+.q-brand h1 { font-size: 16pt; font-weight: 800; margin: 0; }
+.q-title { font-size: 20pt; font-weight: 800; letter-spacing: 3mm; text-align: right; }
+.q-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 1mm 6mm; margin-top: 4mm; }
+.q-box { border: 0.3mm solid #475569; border-radius: 1.5mm; padding: 2.5mm 3mm; margin-top: 4mm; }
+.q-box h2 { font-size: 9pt; color: #475569; margin: 0 0 1mm; font-weight: 700; }
+.q-muted { color: #475569; }
+
+.q-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.q-table th { height: 9mm; background: #0F172A; color: #fff; font-weight: 700; font-size: 9pt; padding: 0 2mm; text-align: left; }
+.q-table td { height: 12mm; padding: 0 2mm; border-bottom: 0.25mm solid #CBD5E1; vertical-align: middle; font-size: 9pt; }
+.q-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
+
+.q-foot { height: 112mm; margin-top: auto; display: flex; flex-direction: column; gap: 3mm; }
+.q-totals { margin-left: auto; width: 75mm; font-variant-numeric: tabular-nums; }
+.q-totals div { display: flex; justify-content: space-between; padding: 0.6mm 0; }
+.q-totals .grand { border-top: 0.6mm solid #0F172A; font-size: 12pt; font-weight: 800; padding-top: 1.5mm; }
+.q-terms { display: grid; grid-template-columns: 1fr 1fr; gap: 1mm 6mm; font-size: 9pt; }
+.q-sign { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; margin-top: auto; }
+.q-sign div { border-top: 0.3mm solid #0F172A; padding-top: 1.5mm; height: 22mm; font-size: 9pt; }
+.q-pageno { position: absolute; bottom: 6mm; left: 0; right: 0; text-align: center; font-size: 8pt; color: #475569; z-index: 1; }
+
+@page { size: A4; margin: 0; }
+@media print {
+  html, body { background: #fff !important; margin: 0; }
+  .no-print { display: none !important; }
+  .a4-stack { display: block; padding: 0; gap: 0; zoom: 1 !important; }
+  .a4-page { box-shadow: none; break-after: page; page-break-after: always; }
+  .a4-page:last-child { break-after: auto; page-break-after: auto; }
+}

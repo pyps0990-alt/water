@@ -7,12 +7,14 @@ const ok = (c, m) => { console.log(c ? 'PASS' : 'FAIL', m); if (!c) process.exit
 await fetch(`${fs}/system_settings/global`, { method: 'PATCH', headers: { Authorization: 'Bearer owner', 'content-type': 'application/json' }, body: JSON.stringify({ fields: { maxWeeklyCases: { integerValue: 2 } } }) })
 
 const input = { source: 'line', clientInfo: { name: '林先生', phone: '0912345678', district: '基隆市七堵區', address: 'X 路 1 號', buildingType: 'townhouse' },
-  problemReport: { category: 'electrical', description: '開冷氣就跳電', photoUrls: [], preferredTime: '平日下午' } }
+  problemReport: { category: 'electrical', description: '開冷氣就跳電', photoPaths: [], preferredTime: '平日下午' } }
 
 const r1 = await call('createCase', input); ok(/^WE-\d{8}-01$/.test(r1.result?.caseId), `create #1 → ${r1.result?.caseId}`)
 const r2 = await call('createCase', input); ok(/-02$/.test(r2.result?.caseId ?? ''), `create #2 → ${r2.result?.caseId}`)
 const r3 = await call('createCase', input); ok(r3.error?.status === 'RESOURCE_EXHAUSTED', `create #3 blocked by cap → ${r3.error?.message}`)
 const bad = await call('createCase', { ...input, clientInfo: { ...input.clientInfo, buildingType: 'castle' } }); ok(bad.error?.status === 'INVALID_ARGUMENT', 'invalid buildingType rejected')
 
+const badPath = await call('createCase', { ...input, problemReport: { ...input.problemReport, photoPaths: ['https://evil.example/x.webp'] } }); ok(badPath.error?.status === 'INVALID_ARGUMENT', 'non-storage photo path rejected')
+const missing = await call('createCase', { ...input, problemReport: { ...input.problemReport, photoPaths: ['case-uploads/abcdEFGH1234_-xyz/1.webp'] } }); ok(missing.error?.status === 'INVALID_ARGUMENT', 'photo not uploaded rejected')
 const s1 = await call('getCaseStatus', { caseId: r1.result.caseId, phoneLast3: '678' }); ok(s1.result?.status === 'arranging' && !('clientInfo' in s1.result), `lookup ok → ${JSON.stringify(s1.result)}`)
 const s2 = await call('getCaseStatus', { caseId: r1.result.caseId, phoneLast3: '000' }); ok(s2.error?.status === 'NOT_FOUND', 'wrong last3 rejected')

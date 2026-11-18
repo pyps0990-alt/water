@@ -69,7 +69,8 @@ export interface CaseDoc {
   problemReport: {
     category: Category
     description: string
-    photoUrls: string[]
+    /** Storage paths: case-uploads/{uploadId}/{n}.webp (admin-readable only). */
+    photoPaths: string[]
     preferredTime: string
   }
   surveyNotes?: string
@@ -110,4 +111,35 @@ export interface SystemSettings {
   watermarkUrl: string
   unacceptedServices: string[]
   licenses: { name: string; certId: string }[]
+  /** Optional banner on the schedule board, e.g. 本週已滿，接受下週場勘。 */
+  publicNotice?: string
+  googleReviewUrl?: string
+}
+
+export interface ReviewItem {
+  author: string
+  rating: number
+  text: string
+  relativeTime?: string
+}
+
+/** system_settings/reviews — written weekly by syncGoogleReviews. */
+export interface ReviewsCache {
+  rating: number
+  total: number
+  items: ReviewItem[]
+  url?: string
+}
+
+export const DAY_STATUS_LABELS: Record<DayStatus, string> = {
+  available: '可預約',
+  busy: '繁忙',
+  closed: '休息',
+}
+
+export const BUILDING_LABELS: Record<BuildingType, string> = {
+  townhouse: '透天厝',
+  apartment: '公寓／大樓',
+  storefront: '店面',
+  office_factory: '辦公室／廠房',
 }

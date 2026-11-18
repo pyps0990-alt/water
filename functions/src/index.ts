@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase-admin/app'
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
+import { getStorage } from 'firebase-admin/storage'
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { setGlobalOptions } from 'firebase-functions/v2'
 
@@ -10,7 +11,7 @@ const db = getFirestore()
 const SOURCES = ['google_business', 'line', 'ig', 'fb', 'threads', 'direct']
 const CATEGORIES = ['electrical', 'plumbing', 'fixtures', 'weak_current']
 const BUILDING_TYPES = ['townhouse', 'apartment', 'storefront', 'office_factory']
-const PHOTO_PREFIX = 'https://firebasestorage.googleapis.com/'
+const PHOTO_PATH = /^case-uploads\/[A-Za-z0-9_-]{16,40}\/[1-5]\.webp$/
 
 /** Date parts in Asia/Taipei. */
 function taipeiDate(d = new Date()) {
@@ -42,11 +43,16 @@ export const createCase = onCall(async (req) => {
   const phone = str(c.phone, 'phone', 20)
   if (!/^[0-9+\-\s]{8,20}$/.test(phone)) throw new HttpsError('invalid-argument', '電話格式錯誤')
 
-  const photoUrls: unknown = p.photoUrls ?? []
-  if (!Array.isArray(photoUrls) || photoUrls.length > 5 ||
-      !photoUrls.every((u) => typeof u === 'string' && u.startsWith(PHOTO_PREFIX) && u.length < 1000)) {
+  const photoPaths: unknown = p.photoPaths ?? []
+  if (!Array.isArray(photoPaths) || photoPaths.length > 5 ||
+      !photoPaths.every((u) => typeof u === 'string' && PHOTO_PATH.test(u)) ||
+      new Set(photoPaths).size !== photoPaths.length) {
     throw new HttpsError('invalid-argument', '照片最多 5 張')
   }
+  // Only accept photos that were actually uploaded through the storage rules.
+  const bucket = getStorage().bucket()
+  const exists = await Promise.all(photoPaths.map((path: string) => bucket.file(path).exists().then(([e]) => e)))
+  if (exists.includes(false)) throw new HttpsError('invalid-argument', '照片上傳未完成，請重新上傳')
 
   const caseData = {
     status: 'arranging',
@@ -62,7 +68,7 @@ export const createCase = onCall(async (req) => {
     problemReport: {
       category: oneOf(p.category, 'category', CATEGORIES),
       description: str(p.description, 'description', 2000),
-      photoUrls,
+      photoPaths,
       preferredTime: str(p.preferredTime ?? '', 'preferredTime', 200, false),
     },
     surveyNotes: '',
