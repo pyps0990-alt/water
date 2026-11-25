@@ -30,7 +30,14 @@ export default function AdminApp() {
       setUser(u)
       if (!u) return setGate('signed-out')
       // Authorization is enforced by security rules; probe with a 1-doc read.
-      try { await listCases(1); setGate('ok') } catch { setGate('denied') }
+      try { await listCases(1) } catch { return setGate('denied') }
+      // Make sure the account carries the `admin` claim Storage rules check (photos, watermark).
+      try {
+        const { callFn } = await import('../lib/firebaseExtras')
+        const r = await callFn<unknown, { refresh: boolean }>('claimAdmin', {})
+        if (r.refresh) await u.getIdToken(true)
+      } catch { /* Firestore access still works; uploads may need a re-login */ }
+      setGate('ok')
     })
   }, [demo])
 

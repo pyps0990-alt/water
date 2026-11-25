@@ -5,7 +5,7 @@ import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'
 import { ref, uploadBytes } from 'firebase/storage'
 
 let env: RulesTestEnvironment
-const admin = () => env.authenticatedContext('a', { email: 'admin1@gmail.com', email_verified: true })
+const admin = () => env.authenticatedContext('a', { email: 'admin1@gmail.com', email_verified: true, admin: true })
 const stranger = () => env.authenticatedContext('s', { email: 'x@gmail.com', email_verified: true })
 const anon = () => env.unauthenticatedContext()
 
@@ -16,7 +16,12 @@ beforeAll(async () => {
     storage: { rules: readFileSync('storage.rules', 'utf8'), host: '127.0.0.1', port: 9199 },
   })
 })
-beforeEach(() => env.clearFirestore())
+beforeEach(async () => {
+  await env.clearFirestore()
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await setDoc(doc(ctx.firestore(), 'admins/admin1@gmail.com'), { role: 'owner' })
+  })
+})
 afterAll(() => env.cleanup())
 
 describe('firestore', () => {
@@ -51,6 +56,12 @@ describe('firestore', () => {
   })
   it('schedules: rejects invalid dayStatus', async () => {
     await assertFails(setDoc(doc(admin().firestore(), 'schedules/2026-11-20'), { dayStatus: 'maybe' }))
+  })
+  it('admins: list is not writable and only readable by self', async () => {
+    await assertFails(setDoc(doc(stranger().firestore(), 'admins/x@gmail.com'), { role: 'owner' }))
+    await assertFails(setDoc(doc(admin().firestore(), 'admins/x@gmail.com'), { role: 'owner' }))
+    await assertSucceeds(getDoc(doc(admin().firestore(), 'admins/admin1@gmail.com')))
+    await assertFails(getDoc(doc(stranger().firestore(), 'admins/admin1@gmail.com')))
   })
   it('counters: locked', async () => {
     await assertFails(getDoc(doc(admin().firestore(), 'counters/x')))

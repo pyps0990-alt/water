@@ -2,10 +2,12 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
 
+    // `admin` custom claim is granted by the claimAdmin Cloud Function to accounts
+    // listed in Firestore /admins/{email}.
     function isAdmin() {
       return request.auth != null
         && request.auth.token.email_verified == true
-        && request.auth.token.email in ['admin1@gmail.com', 'admin2@gmail.com'];
+        && request.auth.token.admin == true;
     }
     function isImageUnder5MB() {
       return request.resource.size < 5 * 1024 * 1024

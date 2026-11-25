@@ -2,11 +2,12 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // TODO: replace with the real technician / owner Google accounts.
+    // Admins are listed in /admins/{email} (managed in the Firebase console or by the
+    // deploy workflow), so no account appears in this public repository.
     function isAdmin() {
       return request.auth != null
         && request.auth.token.email_verified == true
-        && request.auth.token.email in ['admin1@gmail.com', 'admin2@gmail.com'];
+        && exists(/databases/$(database)/documents/admins/$(request.auth.token.email));
     }
 
     // Cases are created only by the `createCase` Cloud Function (Admin SDK),
@@ -37,6 +38,12 @@ service cloud.firestore {
     match /system_settings/{docId} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    // An admin may read their own entry; the list is never writable from clients.
+    match /admins/{email} {
+      allow read: if request.auth != null && request.auth.token.email == email;
+      allow write: if false;
     }
 
     // Internal counters (case ID sequence etc.) — functions only.

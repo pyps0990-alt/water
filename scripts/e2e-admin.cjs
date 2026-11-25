@@ -5,6 +5,10 @@ const ok = (c, m) => { console.log(c ? 'PASS' : 'FAIL', m); if (!c) process.exit
 const B = 'http://127.0.0.1:4173'
 
 ;(async () => {
+  // admin whitelist lives in Firestore now
+  await fetch('http://127.0.0.1:8080/v1/projects/demo-water/databases/(default)/documents/admins/admin1@gmail.com', {
+    method: 'PATCH', headers: { Authorization: 'Bearer owner', 'content-type': 'application/json' },
+    body: JSON.stringify({ fields: { role: { stringValue: 'owner' } } }) })
   const b = await chromium.launch()
   const p = await b.newPage({ viewport: { width: 390, height: 844 } })
   const errs = []; p.on('pageerror', (e) => errs.push(e.message))

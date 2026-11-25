@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase-admin/app'
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 import { getStorage } from 'firebase-admin/storage'
+import { getAuth } from 'firebase-admin/auth'
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { setGlobalOptions } from 'firebase-functions/v2'
 
@@ -128,4 +129,23 @@ export const getCaseStatus = onCall(async (req) => {
     category: snap.get('problemReport.category'),
     updatedAt: snap.get('updatedAt')?.toDate?.().toISOString() ?? null,
   }
+})
+
+/**
+ * Grants the `admin` custom claim (used by Storage rules) to a signed-in account
+ * whose verified email is listed in /admins/{email}. Idempotent.
+ */
+export const claimAdmin = onCall(async (req) => {
+  const email = req.auth?.token.email
+  if (!req.auth || !email || req.auth.token.email_verified !== true) {
+    throw new HttpsError('unauthenticated', '請先登入')
+  }
+  const listed = (await db.doc(`admins/${email}`).get()).exists
+  if (!listed) throw new HttpsError('permission-denied', '此帳號沒有管理權限')
+  if (req.auth.token.admin !== true) {
+    const user = await getAuth().getUser(req.auth.uid)
+    await getAuth().setCustomUserClaims(req.auth.uid, { ...(user.customClaims ?? {}), admin: true })
+    return { granted: true, refresh: true }
+  }
+  return { granted: true, refresh: false }
 })
